@@ -6,7 +6,8 @@
 #documentation without an express license agreement from NVIDIA Corporation
 #is strictly prohibited.
 
-import init.comms.rc
+import /vendor/etc/init/hw/init.comms.rc
+import /vendor/etc/init/init.nvgpu_shims.rc
 
 on early-init
     mount debugfs debugfs /sys/kernel/debug mode=0755
@@ -15,8 +16,6 @@ on early-init
     chmod 222 /sys/kernel/debug/tracing/trace_marker
 
 on init
-    export LD_PRELOAD "libshim_zw.so"
-
     mkdir /mnt/media_rw/sdcard1 0700 media_rw media_rw
     
     # Support legacy paths
@@ -30,10 +29,8 @@ on init
     symlink /mnt/media_rw/usbdrive /usbdrive
 
     # create directory for mounting calibration partition
-    mkdir /mnt/factory 0666 system system
-    
-    mkdir /factory 0666 system system
-    mkdir /factory/wifi_config 0666 system system
+    mkdir /mnt/vendor/factory 0666 system system
+    mkdir /mnt/vendor/wifi_config 0666 system system
 
     # create directory for mounting user calibration partition
     mkdir /mnt/usercalib 0771 system system
@@ -44,10 +41,17 @@ on fs
 # mount console ramooops
    mount pstore pstore /sys/fs/pstore
 
+on post-fs
+    mount none /system/etc/audio_policy_configuration.xml /vendor/etc/audio/audio_policy_configuration.xml bind
+    mount none /system/etc/audio_policy_configuration.xml /vendor/etc/audio_policy_configuration.xml bind
+
 on post-fs-data
     # We chown/chmod /mnt/usercalib again so because mount is run as root + defaults
     chown system system /usercalib
     chmod 0771 /usercalib
+
+    chown system system /mnt/vendor/wifi_config
+    chmod 0666 /mnt/vendor/wifi_config
 
     # create the lost+found directories, so as to enforce our permissions
     mkdir /usercalib/lost+found 0770 root root
@@ -55,19 +59,24 @@ on post-fs-data
     # Set SELinux security contexts on upgrade or policy update.
     restorecon_recursive /usercalib
 
-    mkdir /data/misc/dhcp 0770 dhcp dhcp
-    mkdir /data/misc/hwc 0771 system graphics
+    mkdir /data/vendor/dhcp 0770 dhcp dhcp
+    
+    mkdir /data/vendor/hwc 0771 system graphics
+    
+    mkdir /data/vendor/mediadrm 0770 mediadrm mediadrm
+
     mkdir /data/nvcam 0700 media camera
-    chown dhcp dhcp /data/misc/dhcp
+
+    chown dhcp dhcp /data/vendor/dhcp
 
     # Set indication (checked by vold) that we have finished this action
     setprop vold.post_fs_data_done 1
 
     # create directory for mediaserver EGL blob cache
-    mkdir /data/misc/mediaserver 0770 media media
+    mkdir /data/vendor/mediaserver 0770 media media
 
 # Set up HDCP
-import init.hdcp.rc
+import /vendor/etc/init/hw/init.hdcp.rc
 
 on boot
 
@@ -162,7 +171,7 @@ on boot
     chown system system /sys/bus/i2c/drivers/lp5521/0-0032/run_engine
 
 # TLK storage service
-import init.tlk.rc
+import /vendor/etc/init/hw/init.tlk.rc
 
 on property:ro.debuggable=1
     # EMC debug interface
@@ -213,16 +222,33 @@ on property:ro.debuggable=1
     chmod 0666 /sys/class/invensense/mpu/dbg_dat
 
 # bugreport is triggered by the VOLUME-DOWN and VOLUME-UP keys
-service bugreport /system/bin/dumpstate -d -p -B -o /data/data/com.android.shell/files/bugreports/bugreport
+service bugreport /system/bin/dumpstate -d -p -B -z -o /data/user_de/0/com.android.shell/files/bugreports/bugreport
     class main
     disabled
     oneshot
     keycodes 116 115 114
 
 # unified scaling setup
-import init.ussrd.rc
+import /vendor/etc/init/hw/init.ussrd.rc
 
 # Thie yields each tegra wdt expiration to be at 30 secs and fourth expiration for reboot at 120 secs.
-service watchdogd /sbin/watchdogd 10 110
+service watchdogd /system/bin/watchdogd 10 110
     class core
     seclabel u:r:watchdogd:s0
+
+#Logcat in cache folder while is in bootanimation
+service logger /system/bin/logcat -b all -D -f /cache/boot_log.txt
+    class main
+    user root
+    group root system
+    disabled
+    oneshot
+
+on post-fs-data
+    # Clear existing log and start the service
+    rm /cache/boot_log.txt
+    start logger
+
+on property:sys.boot_completed=1
+    # Stop the logger service
+    stop logger
