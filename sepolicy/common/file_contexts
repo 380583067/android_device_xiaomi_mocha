@@ -47,7 +47,7 @@
 /dev/gpu_freq_max			u:object_r:pmqos_device:s0
 /dev/gpu_freq_min			u:object_r:pmqos_device:s0
 # TLK device
-/dev/tlk_device				u:object_r:tee_device:s0
+#/dev/tlk_device				u:object_r:tee_device:s0
 # modem devices
 /dev/ttyACM.*				u:object_r:radio_device:s0
 # Tegra System Profiler
@@ -144,7 +144,7 @@
 # System files
 
 # TEE
-(/system)?/vendor/bin/tlk_daemon	u:object_r:tee_exec:s0
+#(/system)?/vendor/bin/tlk_daemon	u:object_r:tee_exec:s0
 (/system)?/vendor/bin/eks2_client	u:object_r:tee_exec:s0
 (/system)?/vendor/bin/ss_status		u:object_r:tee_exec:s0
 (/system)?/vendor/bin/run_ss_status.sh	u:object_r:tee_exec:s0
@@ -153,7 +153,7 @@
 # wpalog
 /system/bin/supplicant_log_monitor.sh	u:object_r:wpalog_exec:s0
 # bt
-/system/bin/bt_loader.sh		u:object_r:bt_loader_exec:s0
+/system/bin/bt_loader.sh		      u:object_r:bt_loader_exec:s0
 # ethernet
 /system/bin/rebindEthernet.sh		u:object_r:rebindEthernet_exec:s0
 # gps
@@ -210,7 +210,8 @@
 (/system)?/vendor/bin/cac_log_dumper	u:object_r:cac_log_dumper_exec:s0
 # factory_tests
 (/system)?/vendor/bin/factory_tests	u:object_r:factory_tests_exec:s0
-
+# Lineage Trust HAL
+/system/vendor/bin/hw/vendor\.lineage\.trust@1\.0-service                    u:object_r:hal_trust_default_exec:s0
 #############################
 # Data files
 
@@ -219,9 +220,9 @@
 # camera config folder
 /data/camera_config(/.*)?		u:object_r:camera_config_file:s0
 # tlk data folder
-/data/tlk(/.*)?				u:object_r:tee_data_file:s0
+#/data/tlk(/.*)?				u:object_r:tee_data_file:s0
 # tlk ss data folder
-/data/ss(/.*)?				u:object_r:tee_data_file:s0
+#/data/ss(/.*)?				u:object_r:tee_data_file:s0
 # user calibration
 /data/touchscreen(/.*)?			u:object_r:user_calib_file:s0
 # stats data share folder

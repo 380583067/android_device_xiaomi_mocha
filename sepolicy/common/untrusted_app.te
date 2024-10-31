@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # Allow untrusted apps to access tsecb dev node
+allow untrusted_app alarm_boot_prop:file { open read };
 allow untrusted_app tsec_device:chr_file rw_file_perms;
 
 # Access to read SOC family
@@ -55,3 +56,6 @@ binder_call(untrusted_app, hubcore)
 
 # Allow untrusted_app to access gamestreaming_prop
 get_prop(untrusted_app, gamestreaming_prop)
+
+allow untrusted_app { sysfs_net proc_asound }:dir { read  open search };
+allow untrusted_app { sysfs rootfs proc_vmstat proc_net_tcp_udp }:file { open read getattr };
