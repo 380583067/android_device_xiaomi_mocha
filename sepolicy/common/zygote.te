@@ -19,3 +19,4 @@ binder_use(zygote);
 r_dir_file(zygote, camera_config_file)
 
 #allow zygote zygote_tmpfs:file execute;
+allow zygote device:file { write open };
