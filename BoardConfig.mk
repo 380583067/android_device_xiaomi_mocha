@@ -17,7 +17,9 @@
 # This variable is set first, so it can be overridden
 # by BoardConfigVendor.mk
 
-TARGET_SPECIFIC_HEADER_PATH := device/xiaomi/mocha/include
+# Path
+LOCAL_PATH := device/xiaomi/mocha
+TARGET_SPECIFIC_HEADER_PATH := $(LOCAL_PATH)/include
 
 # Architecture
 TARGET_CPU_ABI := armeabi-v7a
@@ -29,8 +31,6 @@ TARGET_CPU_VARIANT := cortex-a15
 # Audio
 BOARD_USES_GENERIC_AUDIO := false
 BOARD_USES_ALSA_AUDIO := true
-TARGET_EXCLUDES_AUDIOFX := true
-TARGET_LD_SHIM_LIBS := /system/vendor/lib/hw/audio.primary.vendor.tegra.so|libmocha_audio.so
 
 # Binder API
 TARGET_USES_64_BIT_BINDER := true
@@ -38,7 +38,7 @@ TARGET_USES_64_BIT_BINDER := true
 # Bluetooth
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/xiaomi/mocha/bluetooth
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(LOCAL_PATH)/bluetooth/include
 
 # Board
 TARGET_BOARD_PLATFORM := tegra
@@ -50,6 +50,20 @@ TARGET_SCREEN_HEIGHT := 2048
 TARGET_SCREEN_WIDTH := 1536
 TARGET_BOOTANIMATION_HALF_RES := true
 
+# dexpre-opt
+ifeq ($(HOST_OS),linux)
+  ifneq ($(TARGET_BUILD_VARIANT),eng)
+      WITH_DEXPREOPT ?= true
+      WITH_DEXPREOPT_DEBUG_INFO := false
+      USE_DEX2OAT_DEBUG := false
+  endif
+endif
+WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := true
+
+#ELF
+BUILD_BROKEN_PREBUILT_ELF_FILES := true
+LOCAL_CHECK_ELF_FILES := false
+
 # FS
 BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_USERDATAIMAGE_FILE_SYSTEM_TYPE := f2fs
@@ -58,6 +72,9 @@ TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
 TARGET_USES_MKE2FS := true
 
+# Display
+TARGET_SCREEN_DENSITY := 326
+
 # Graphics
 USE_OPENGL_RENDERER := true
 BOARD_DISABLE_TRIPLE_BUFFERED_DISPLAY_SURFACES := true
@@ -65,12 +82,19 @@ BOARD_DISABLE_TRIPLE_BUFFERED_DISPLAY_SURFACES := true
 #SF_VSYNC_EVENT_PHASE_OFFSET_NS := 1000000
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 
+# Gralloc
+TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS := 0x2000U | 0x02000000U
+
+# HIDL Manifest
+DEVICE_MANIFEST_FILE := $(LOCAL_PATH)/manifest.xml
+PRODUCT_ENFORCE_VINTF_MANIFEST_OVERRIDE := true
+
 # Include an expanded selection of fonts
 EXTENDED_FONT_FOOTPRINT := true
 
 # Init
-TARGET_INIT_VENDOR_LIB := mocha_init
-TARGET_RECOVERY_DEVICE_MODULES := mocha_init
+TARGET_INIT_VENDOR_LIB := libinit_mocha
+TARGET_RECOVERY_DEVICE_MODULES := libinit_mocha
 
 # Kernel
 BOARD_KERNEL_CMDLINE := vpr_resize androidboot.selinux=permissive
@@ -84,7 +108,7 @@ TARGET_KERNEL_CONFIG := tegra12_android_defconfig
 BOARD_KERNEL_IMAGE_NAME := zImage
 BOARD_KERNEL_SEPARATED_DT := true
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $(BOARD_KERNEL_TAGS_OFFSET)
-BOARD_CUSTOM_BOOTIMG_MK := device/xiaomi/mocha/mkbootimg.mk
+BOARD_CUSTOM_BOOTIMG_MK := $(LOCAL_PATH)/mkbootimg.mk
 
 #BOARD_SYSTEMIMAGE_PARTITION_SIZE := 671088640 # 640 Mb stock partition table
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1337564160 # 1.2 Gb
@@ -96,7 +120,10 @@ BOARD_RECOVERYIMAGE_PARTITION_SIZE := 20971520
 BOARD_FLASH_BLOCK_SIZE := 131072
 
 # LINEAGEHW
-JAVA_SOURCE_OVERLAYS := org.lineageos.hardware|device/xiaomi/mocha/lineagehw|**/*.java
+JAVA_SOURCE_OVERLAYS := org.lineageos.hardware|$(LOCAL_PATH)/lineagehw|**/*.java
+
+# Malloc
+MALLOC_SVELTE := true
 
 # Offmode Charging
 BOARD_CHARGER_DISABLE_INIT_BLANK := true
@@ -109,23 +136,35 @@ BLUE_LED_PATH := "/sys/class/leds/blue/brightness"
 MAX_EGL_CACHE_SIZE := 4194304
 MAX_EGL_CACHE_ENTRY_SIZE := 262144
 
+# PowerHAL
+TARGET_POWERHAL_VARIANT := tegra
+
 # Recovery
-TARGET_RECOVERY_DEVICE_DIRS += device/xiaomi/mocha
-TARGET_RECOVERY_FSTAB := device/xiaomi/mocha/initfiles/fstab.tn8
+TARGET_RECOVERY_DEVICE_DIRS += $(LOCAL_PATH)
+TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/initfiles/fstab.tn8
 BOARD_NO_SECURE_DISCARD := true
 
 # RenderScript
 OVERRIDE_RS_DRIVER := libnvRSDriver.so
+BOARD_OVERRIDE_RS_CPU_VARIANT_32 := cortex-a15
 
 # SELinux
-BOARD_SEPOLICY_DIRS += device/xiaomi/mocha/sepolicy/common \
-                       device/xiaomi/mocha/sepolicy/lineage-common \
-                       device/xiaomi/mocha/sepolicy/mocha
-
 SELINUX_IGNORE_NEVERALLOWS := true
-                       
+BOARD_SEPOLICY_DIRS += $(LOCAL_PATH)/sepolicy/mocha \
+                       $(LOCAL_PATH)/sepolicy/lineage-common \
+                       $(LOCAL_PATH)/sepolicy/common
+                      
+# SHIMS
+TARGET_LD_SHIM_LIBS := \
+    /system/vendor/lib/hw/audio.primary.vendor.tegra.so|/system/vendor/lib/libmocha_audio.so \
+    /system/vendor/lib/hw/audio.primary.vendor.tegra.so|libshim_binder.so \
+    /system/vendor/lib/libnvgr.so|libshim_atomic.so 
+
 # ThermalHAL
 TARGET_THERMALHAL_VARIANT := tegra
+
+#WEBGL in WebKit
+ENABLE_WEBGL := true
 
 # Use unified vendor
 TARGET_TEGRA_VARIANT := shield
