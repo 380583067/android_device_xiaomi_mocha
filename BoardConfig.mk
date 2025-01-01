@@ -38,7 +38,7 @@ TARGET_USES_64_BIT_BINDER := true
 # Bluetooth
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/xiaomi/mocha/bluetooth
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/xiaomi/mocha/bluetooth
 
 # Board
 TARGET_BOARD_PLATFORM := tegra
@@ -58,6 +58,12 @@ TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
 TARGET_USES_MKE2FS := true
 
+# FM
+BOARD_HAVE_ALTERNATE_FM := true
+BOARD_HAVE_BCM_FM := true
+BOARD_HAVE_FM_RADIO := true
+BOARD_DISABLE_FMRADIO_LIBJNI := true
+
 # Graphics
 USE_OPENGL_RENDERER := true
 BOARD_DISABLE_TRIPLE_BUFFERED_DISPLAY_SURFACES := true
@@ -65,12 +71,19 @@ BOARD_DISABLE_TRIPLE_BUFFERED_DISPLAY_SURFACES := true
 #SF_VSYNC_EVENT_PHASE_OFFSET_NS := 1000000
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 
+# Include
+TARGET_SPECIFIC_HEADER_PATH := device/xiaomi/mocha/include
+
 # Include an expanded selection of fonts
 EXTENDED_FONT_FOOTPRINT := true
 
 # Init
 TARGET_INIT_VENDOR_LIB := mocha_init
 TARGET_RECOVERY_DEVICE_MODULES := mocha_init
+
+# HIDL
+MANIFEST_FILE := $(LOCAL_PATH)/manifest.xml
+MATRIX_FILE := $(LOCAL_PATH)/compatibility_matrix.xml
 
 # Kernel
 BOARD_KERNEL_CMDLINE := vpr_resize androidboot.selinux=permissive
@@ -109,6 +122,9 @@ BLUE_LED_PATH := "/sys/class/leds/blue/brightness"
 MAX_EGL_CACHE_SIZE := 4194304
 MAX_EGL_CACHE_ENTRY_SIZE := 262144
 
+# PowerHAL
+TARGET_POWERHAL_VARIANT := tegra
+
 # Recovery
 TARGET_RECOVERY_DEVICE_DIRS += device/xiaomi/mocha
 TARGET_RECOVERY_FSTAB := device/xiaomi/mocha/initfiles/fstab.tn8
@@ -116,6 +132,10 @@ BOARD_NO_SECURE_DISCARD := true
 
 # RenderScript
 OVERRIDE_RS_DRIVER := libnvRSDriver.so
+BOARD_OVERRIDE_RS_CPU_VARIANT_32 := cortex-a15
+
+# Security patch level
+VENDOR_SECURITY_PATCH := 2018-01-01
 
 # SELinux
 BOARD_SEPOLICY_DIRS += device/xiaomi/mocha/sepolicy/common \
@@ -145,3 +165,14 @@ WIFI_DRIVER_FW_PATH_PARAM        := "/sys/module/bcmdhd/parameters/firmware_path
                        
 # Zygote whitelist extra paths
 ZYGOTE_WHITELIST_PATH_EXTRA := \"/dev/nvhost-ctrl\",\"/dev/nvmap\",
+
+# Enable dex-preoptimization to speed up first boot sequence
+ifeq ($(HOST_OS),linux)
+  ifeq ($(TARGET_BUILD_VARIANT),user)
+    ifeq ($(WITH_DEXPREOPT),)
+      WITH_DEXPREOPT := true
+      WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := true
+    endif
+  endif
+endif
+DONT_DEXPREOPT_PREBUILTS := true

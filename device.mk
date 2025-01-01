@@ -71,13 +71,23 @@ PRODUCT_PACKAGES += \
 # Filesystem management tools
 PRODUCT_PACKAGES += \
     fsck.f2fs mkfs.f2fs
-    
+
+# FM
+PRODUCT_PACKAGES += \
+   FMRadio \
+   brcm-uim-sysfs \
+   libfmradio.v4l2-fm
+
 # Graphics shim
 PRODUCT_PACKAGES += libs \
                     libshim_zw
                     
 # HIDL HALs
 $(call inherit-product, device/xiaomi/mocha/hidl.mk)
+
+# HIDL Manifest
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/manifest.xml:system/vendor/manifest.xml
 
 # keylayout
 PRODUCT_COPY_FILES += \
@@ -93,13 +103,22 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/media/media_profiles_V1_0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles_V1_0.xml \
     $(LOCAL_PATH)/media/media_codecs_performance.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance.xml
     
+# Memory Optimizations
+PRODUCT_PROPERTY_OVERRIDES += \
+     ro.vendor.qti.am.reschedule_service=true \
+     ro.vendor.qti.sys.fw.use_trim_settings=true \
+     ro.vendor.qti.sys.fw.trim_empty_percent=50 \
+     ro.vendor.qti.sys.fw.trim_cache_percent=100 \
+     ro.vendor.qti.sys.fw.empty_app_percent=25
+
 # NVIDIA
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/permissions/com.nvidia.blakemanager.xml:system/etc/permissions/com.nvidia.blakemanager.xml \
     $(LOCAL_PATH)/permissions/com.nvidia.feature.xml:system/etc/permissions/com.nvidia.feature.xml \
     $(LOCAL_PATH)/permissions/com.nvidia.feature.opengl4.xml:system/etc/permissions/com.nvidia.feature.opengl4.xml \
     $(LOCAL_PATH)/permissions/com.nvidia.nvsi.xml:system/etc/permissions/com.nvidia.nvsi.xml
-
+    NV_ANDROID_FRAMEWORK_ENHANCEMENTS := true
+    
 # Overlay
 DEVICE_PACKAGE_OVERLAYS += \
     device/xiaomi/mocha/overlay
@@ -128,8 +147,22 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
     frameworks/native/data/etc/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml \
     frameworks/native/data/etc/android.hardware.sensor.stepcounter.xml:system/etc/permissions/android.hardware.sensor.stepcounter.xml \
+    frameworks/native/data/etc/android.hardware.sensor.stepdetector.xml:system/etc/permissions/android.hardware.sensor.stepdetector.xml \
+    frameworks/native/data/etc/android.software.freeform_window_management.xml:system/etc/permissions/android.software.freeform_window_management.xml\
+    frameworks/av/services/audiopolicy/config/a2dp_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_audio_policy_configuration.xml \
+    frameworks/av/services/audiopolicy/config/audio_policy_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_volumes.xml \
+    frameworks/av/services/audiopolicy/config/default_volume_tables.xml:$(TARGET_COPY_OUT_VENDOR)/etc/default_volume_tables.xml \
+    frameworks/av/services/audiopolicy/config/r_submix_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/r_submix_audio_policy_configuration.xml \
+    frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml \
+    frameworks/native/data/etc/android.hardware.sensor.stepcounter.xml:system/etc/permissions/android.hardware.sensor.stepcounter.xml \
     frameworks/native/data/etc/android.hardware.sensor.stepdetector.xml:system/etc/permissions/android.hardware.sensor.stepdetector.xml
-    
+
+PRODUCT_CHARACTERISTICS := tablet
+
+# Power
+PRODUCT_PACKAGES += \
+    power.tegra
+
 # Ramdisk
 PRODUCT_PACKAGES += \
     fstab.tn8 \
@@ -156,8 +189,6 @@ PRODUCT_PACKAGES += \
 # System properties
 -include $(LOCAL_PATH)/system_prop.mk
 
-PRODUCT_CHARACTERISTICS := tablet
-
 # Thermal
 PRODUCT_PACKAGES += thermal.tegra
 
@@ -182,3 +213,8 @@ PRODUCT_PACKAGES += \
 # wifi and bt macs settter
 PRODUCT_PACKAGES += \
     conn_init
+
+# TimeKeep
+PRODUCT_PACKAGES += \
+    timekeep \
+    TimeKeep

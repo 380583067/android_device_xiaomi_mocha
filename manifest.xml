@@ -18,6 +18,11 @@
         </interface>
     </hal>
     <hal format="hidl">
+        <name>android.hardware.broadcastradio</name>
+        <transport arch="32">passthrough</transport>
+        <version>1.0</version>
+    </hal>
+    <hal format="hidl">
         <name>android.hardware.configstore</name>
         <transport>hwbinder</transport>
         <version>1.1</version>
@@ -38,6 +43,10 @@
             <name>IDrmFactory</name>
             <instance>default</instance>
         </interface>
+        <fqname>@1.1::ICryptoFactory/clearkey</fqname>
+        <fqname>@1.1::ICryptoFactory/widevine</fqname>
+        <fqname>@1.1::IDrmFactory/clearkey</fqname>
+        <fqname>@1.1::IDrmFactory/widevine</fqname>
     </hal>
     <hal format="hidl">
         <name>android.hardware.health</name>
@@ -107,15 +116,6 @@
         </interface>
     </hal>
     <hal format="hidl">
-        <name>android.hardware.memtrack</name>
-        <transport>hwbinder</transport>
-        <version>1.0</version>
-        <interface>
-            <name>IMemtrack</name>
-            <instance>default</instance>
-        </interface>
-    </hal>
-    <hal format="hidl">
         <name>android.hardware.power</name>
         <transport>hwbinder</transport>
         <version>1.0</version>
@@ -139,6 +139,15 @@
         <version>1.0</version>
         <interface>
             <name>ISensors</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.soundtrigger</name>
+        <transport arch="32">passthrough</transport>
+        <version>2.0</version>
+        <interface>
+            <name>ISoundTriggerHw</name>
             <instance>default</instance>
         </interface>
     </hal>
